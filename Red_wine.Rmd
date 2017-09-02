@@ -1,0 +1,1056 @@
+---
+title: "DAND Project EDA with R"
+output:
+  html_document:
+    code_folding: hide
+    toc: true
+    number_sections: true
+    toc_float: false
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readr)
+library(data.table)
+library(ggplot2)
+library(corrplot)
+library(ggthemes)
+```
+
+
+# Project Introdution 
+
+Part of the DAND project, the EDA project lead the student to analyse one of the following dataset: 
+* White Wine quality dataset 
+* Red Wine quality dataset 
+* Financial contribution to Presidential campaing by states 
+* Loan Data from prosper
+* Student dataset
+
+## Details of this project
+
+### First look at the Data
+
+The dataset chosen is the Red Wine Dataset, it encompasses 11 variables and 1 'output' varible. The two datasets are related to red and white variants of the Portuguese "Vinho Verde" wine.
+
+The dataset is composed of 1,599 observation. For each observation comes the following variables: 
+
+#### Input variables (based on physicochemical tests):
+* fixed acidity (tartaric acid - g / dm^3)
+* volatile acidity (acetic acid - g / dm^3)
+* citric acid (g / dm^3)
+* residual sugar (g / dm^3)
+* chlorides (sodium chloride - g / dm^3
+* free sulfur dioxide (mg / dm^3)
+* total sulfur dioxide (mg / dm^3)
+* density (g / cm^3)
+* pH
+* sulphates (potassium sulphate - g / dm3)
+* alcohol (% by volume)
+
+#### Output variable (based on sensory data): 
+* quality: score between 0 (very bad) and 10 (very excellent). 
+
+## Limitation linked to the dataset
+
+Wine making is a complex process which involves way more than chemical compounds of the Wine itself, environmental variables linked to the wineyard such as year, temperature, locations but also linked to the winemakers such as the vinification, age of the wine and such are also components that could influence the wine.
+
+last but not the least, the Quality is rated by 3 Wine experts. Given the wide range of taste, experience, and trends existing in the Wine Market. The rating could change over time.
+
+Nevertheless, the experiment remains significant and will bring light on which of the measured variables influence the decision of the Wine Experts. 
+
+## Goal of the analysis
+
+The data analysis will be 'guided' by the following question:
+Which chemical properties influence the quality of red wines?
+
+To answer this question different prediction models will be explored to see which fit the best the data. As introduced in the dataset explanations we already know which model 'fit' the best the data, "Several data mining methods were applied to model these datasets (i.e. red and white wine dataset) under a regression approach. The support vector machine model achieved the best results."
+
+It is expected to have, at the end of the data analysis results that which are the variables that influence or not the quality of the wine.
+
+The analysis will be performed only on the provided variables and, if anys, engineered variables. 
+
+# Univariate Plot Section
+```{r,echo = FALSE, warning=FALSE}
+
+# Import the dataset : Redwine
+Df.redwine <- data.table(read_csv("~/Documents/Data Analytics/DANDp5-EDA mit R/wineQualityReds.csv", 
+    col_types = cols(X1 = col_skip())))
+DT.redwine <- data.table(Df.redwine)
+
+```
+
+## fixed Acidity 
+
+```{r,echo = FALSE, warning=FALSE}
+
+# Import the dataset : Redwine
+qplot(data = DT.redwine ,
+      x= fixed.acidity,
+      bins = 30)+ 
+  xlab("fixed acidity g / dm^3") +
+  ylab("Count") + 
+  labs(title    = "Measured fixed acidity Histogram", 
+       subtitle = "Red Wine Dataset - Dand Project") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_continuous(breaks = seq(from = 4, to  = 16, by = 1),
+                     limits = c(4, 14))
+summary(DT.redwine$fixed.acidity)
+```
+
+The Fixed acidity measure follow a slightly risght skewed normal distribution, Median is at 7.9 g / dm^3 and mean  value is at 8.32 g / dm^3.
+
+
+## Volatile Acidity 
+
+```{r,echo = FALSE, warning=FALSE}
+
+# Import the dataset : Redwine
+qplot(data = DT.redwine ,
+      x= volatile.acidity,
+      bins = 40) + 
+  xlab("volatile acidity g / dm^3") +
+  ylab("Count") + 
+  labs(title    = "Measured volatile acidity Histogram", 
+       subtitle = "Red Wine Dataset - Dand Project") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_continuous(breaks = seq(from = 0.1, to  = 1.1, by = 0.1),
+                     limits = c(0.1, 1.1))
+
+summary(DT.redwine$volatile.acidity)
+```
+
+Volative acidity levels follows a slightly right skewed distribution.
+
+## Citric Acid
+
+```{r,echo = FALSE, warning=FALSE}
+
+qplot(data = DT.redwine ,
+      x= citric.acid,
+      bins = 30) + 
+  xlab("Citric acidity g / dm^3") +
+  ylab("Count") + 
+  labs(title    = "Measured Citric acidity, Histogram", 
+       subtitle = "Red Wine Dataset - Dand Project") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_continuous(breaks = seq(from = 0, to  = 0.8, by = 0.1),
+                     limits = c(0, 0.8))
+
+summary(DT.redwine$citric.acid)
+```
+
+This distribution has a lot of peaks and it is difficult to determine by seeing reading the vizualization what would be an average or median measure of Citric Acidity. 
+
+
+## Residual Sugar
+
+```{r,echo = FALSE, warning=FALSE}
+
+qplot(data = DT.redwine ,
+      x= residual.sugar,
+      bins = 30) + 
+  xlab("residual.sugar g / dm^3") +
+  ylab("Count") + 
+  labs(title    = "Measured residual.sugar, Histogram", 
+       subtitle = "Red Wine Dataset - Dand Project") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_continuous(breaks = seq(from = 1, to  = 4, by = 0.25),
+                     limits = c(1.25, 3.5))
+
+summary(DT.redwine$residual.sugar)
+```
+Lot of bins are emtpy (this could be solved by adjusting the plot), I decided to let it because it is highly probable that the mean of measure was not precise enough to details the data to the precision of the histogram. 
+
+Neverthesless, the distribution looks slightly right skewed with a median ar 2.2 g / dm^3 and a mean at 2.539 g / dm^3. 
+
+## Chlorides
+
+```{r,echo = FALSE, warning=FALSE}
+
+qplot(data = DT.redwine ,
+      x= chlorides,
+      bins = 30) + 
+  xlab("chlorides g / dm^3") +
+  ylab("Count") + 
+  labs(title    = "Measured chlorides, Histogram", 
+       subtitle = "Red Wine Dataset - Dand Project") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_continuous(breaks = seq(from = 0, to  = 0.2, by = 0.01),
+                     limits = c(0.03, 0.14))
+
+summary(DT.redwine$chlorides)
+```
+Chlorides measures follows a normal distribution.
+
+## Free Sulfur Dioxide
+
+```{r,echo = FALSE, warning=FALSE}
+
+qplot(data = DT.redwine ,
+      x= free.sulfur.dioxide ,
+      binwidth = 1) + 
+  xlab("free.sulfur.dioxide mg / dm^3") +
+  ylab("Count") + 
+  labs(title    = "Measured free.sulfur.dioxide, Histogram", 
+       subtitle = "Red Wine Dataset - Dand Project") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_continuous(breaks = seq(from = 0, to  = 40, by = 5),
+                     limits = c(0, 40))
+
+summary(DT.redwine$free.sulfur.dioxide)
+```
+
+Free sulfur dioxide follows a right skewed distribution, median value measured around 14 and mean around 16.
+
+## Total Sulfur Dioxide
+
+```{r,echo = FALSE, warning=FALSE}
+
+qplot(data = DT.redwine ,
+      x= total.sulfur.dioxide,
+      bins = 30) + 
+  xlab("total.sulfur.dioxide mg / dm^3") +
+  ylab("Count") + 
+  labs(title    = "Measured total.sulfur.dioxide, Histogram", 
+       subtitle = "Red Wine Dataset - Dand Project") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_continuous(breaks = seq(from = 0, to  = 150, by = 10),
+                     limits = c(0, 150))
+
+summary(DT.redwine$total.sulfur.dioxide)
+```
+
+Total sulfur dioxide follows a right skewed distribution with a median measured at 38 mg / dm^3 and a mean around 46 mg / dm^3.
+
+## Density
+
+```{r,echo = FALSE, warning=FALSE}
+
+qplot(data = DT.redwine ,
+      x= density,
+      bins = 30) + 
+  xlab("density g / cm^3") +
+  ylab("Count") + 
+  labs(title    = "Measured density, Histogram", 
+       subtitle = "Red Wine Dataset - Dand Project") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_continuous(breaks = seq(from = 0.990, to  = 1.0040, by = 0.001),
+                     limits = c(0.990, 1.0040))
+
+summary(DT.redwine$density)
+```
+
+Density follows a normal distribution (centred below 1 g / cm^3, which is the density of water)
+
+
+## pH
+
+```{r,echo = FALSE, warning=FALSE}
+
+qplot(data = DT.redwine ,
+      x= pH,
+      bins = 25) + 
+  xlab("pH") +
+  ylab("Count") + 
+  labs(title    = "Measured pH, Histogram", 
+       subtitle = "Red Wine Dataset - Dand Project") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_continuous(breaks = seq(from = 2.5, to  = 4, by = 0.1),
+                     limits = c(2.9, 3.8))
+summary(DT.redwine$pH)
+```
+
+the measure of pH follows a normal distribution, median / mean around 3.3. 
+
+## Sulphates
+
+```{r,echo = FALSE, warning=FALSE}
+
+qplot(data = DT.redwine ,
+      x= sulphates,
+      bins = 25) + 
+  xlab("sulphates g / dm^3") +
+  ylab("Count") + 
+  labs(title    = "Measured sulphates, Histogram", 
+       subtitle = "Red Wine Dataset - Dand Project") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_continuous(breaks = seq(from = 0, to  = 4, by = 0.05),
+                     limits = c(0.35, 1))
+
+summary(DT.redwine$sulphates)
+```
+
+
+Sulphates follows a slightly right skewed distribution, median around 0.6g / dm^3, mean around 0.65g / dm^3.
+
+
+## Alcohol
+
+```{r,echo = FALSE, warning=FALSE}
+
+qplot(data = DT.redwine ,
+      x= alcohol,
+      bins = 25) + 
+  xlab("alcohol [%]") +
+  ylab("Count") + 
+  labs(title    = "Measured alcohol, Histogram", 
+       subtitle = "Red Wine Dataset - Dand Project") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_continuous(breaks = seq(from = 8, to  = 14, by = 0.5),
+                     limits = c(8.5, 13.5))
+
+summary(DT.redwine$alcohol)
+```
+Slightly right skewed distribution with a mean around 10.5 % Alcohol and a median around 10 %
+
+## General ratings
+
+The plot below shows the distribution of Wine ratings
+
+```{r plot wine rating, fig.align = 'center', echo = FALSE, warning=FALSE}
+DT.redwine$quality_F <- as.factor(DT.redwine$quality)
+levels(DT.redwine$quality_F) <- c(seq(from = 3, to = 8, by = 1))
+
+# Display how much wine / quality :
+ggplot(data = DT.redwine) +
+  geom_bar(aes(x    = quality_F, 
+               fill = quality_F)) + 
+  xlab("Quality of the Wine (the higher, the better)") +
+  ylab("Count of rating") + 
+  labs(title    = "Distribution of Wine Rating", 
+       subtitle = "Scale from 0 (Very Poor) to 10 (Very Good)") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu")
+
+```
+
+## Multivariate Exploration
+
+### volatile acidity levels exploration
+
+
+```{r volatile acidity, echo=FALSE, out.width = '50%', warning = FALSE, fig.show='hold'}
+# plot Volatile Acidity
+qplot(x    = quality_F,
+      y    = volatile.acidity,
+      data = DT.redwine, 
+      geom = "violin",
+      fill = quality_F) + 
+  xlab("Quality ratings") +
+  ylab("Measure of Volatile acidity") + 
+  labs(title    = "Vizualizuation of Volatile acidity and Quality Ratings", 
+       subtitle = "Volatile acidity in g / dm^3)") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu")
+
+qplot(x    = volatile.acidity,
+      geom = "histogram",
+      data = DT.redwine, 
+      fill = quality_F, 
+      bins = 40) + 
+  xlab("Measured Volatile Acidity") +
+  ylab("Frequeny") + 
+  labs(title    = "Vizualizuation of Volatile acidity and Quality Ratings", 
+       subtitle = "Volatile acidity in g / dm^3 - X axis LOG10") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_log10(breaks = seq(from = 0, to = 1.2, by = 0.2),
+                limits = c(0.2,1.2))
+
+```
+
+### Chlorides levels exploration
+
+```{r Chlorides, echo=FALSE, out.width = '50%', warning = FALSE, fig.show='hold'}
+
+# plot Volatile chlorides
+
+ggplot(data = DT.redwine,
+       aes(x = quality_F,
+           y = chlorides)) +
+  geom_violin(aes(fill = quality_F)) + 
+  stat_smooth(method= "lm", 
+              formula = quality_F ~ chlorides) +
+  xlab("Quality Ratings") + 
+  ylab("Measure of chlorides") + 
+  labs(title    = "Vizualizuation of chlorides and Quality Ratings", 
+       subtitle = "Chlorides in g / dm^3") +
+  theme_minimal()+
+  scale_fill_brewer(palette = "RdYlBu") 
+
+
+qplot(x    = chlorides,
+      geom = "histogram",
+      data = DT.redwine, 
+      fill = quality_F, 
+      bins = 45) + 
+  xlab("Measured chlorides") +
+  ylab("Frequeny") + 
+  labs(title    = "Vizualizuation of chlorides and Quality Ratings", 
+       subtitle = " chlorides in g / dm^3 -  X axis LOG10") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_log10(breaks = seq(from = 0, to = 0.15, by = 0.01),
+                limits = c(0.04,0.15))
+
+
+```
+
+### Total sulfur dioxide levels vizualization
+
+
+```{r total.sulfur.dioxide, echo=FALSE, out.width = '50%', warning = FALSE, fig.show='hold'}
+qplot(x    = quality_F,
+      y    = total.sulfur.dioxide,
+      geom = "violin",
+      data = DT.redwine, 
+      fill = quality_F) +
+  xlab("Quality Ratings") +
+  ylab("Measure of Total Sulfur Dioxide") + 
+  labs(title    = "Vizualizuation of Total Sulfur Dioxide and Quality Ratings", 
+       subtitle = " Total Sulfur Dioxide in mg / dm^3)") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu")
+
+
+qplot(x    = total.sulfur.dioxide,
+      geom = "histogram",
+      data = DT.redwine, 
+      fill = quality_F, 
+      bins = 35) + 
+  xlab("Measured total.sulfur.dioxide") +
+  ylab("Frequeny") + 
+  labs(title    = "Histogram of total.sulfur.dioxide measures", 
+       subtitle = " total.sulfur.dioxide in g / dm^3 - ") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_log10(breaks = seq(from = 10, to = 150, by = 15),
+                limits = c(10, 150))
+
+```
+
+### Total sulfur dioxide levels vizualization
+
+
+```{r sulphates, echo=FALSE, warning =FALSE, out.width = '50%', fig.show='hold'}
+
+qplot(x    = quality_F,
+      y    = sulphates,
+      geom = "violin",
+      data = DT.redwine, 
+      fill = quality_F) +
+  xlab("Quality Ratings") +
+  ylab("Measure of Sulphates") + 
+  labs(title    = "Vizualizuation of Sulphates and Quality Ratings", 
+       subtitle = "Sulphates in g / dm^3") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu")
+
+
+qplot(x    = sulphates,
+      geom = "histogram",
+      data = DT.redwine, 
+      fill = quality_F, 
+      bins = 40) + 
+  xlab("Measured sulphates") +
+  ylab("Frequeny") + 
+  labs(title    = "Histogram of sulphates values", 
+       subtitle = " sulphates -  X axis LOG10") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_log10(breaks = seq(from = 0.4, to = 1.2, by = 0.1),
+                limits = c(0.4,1.2))
+
+```
+
+### Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
+
+### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
+
+Alcohol and density are highly corelated, which I guess is normal as Ethanol is lither than Water. 
+
+
+### What was the strongest relationship you found?
+
+One of the strong relationship found is between fixed acidity, citric acid, density and pH. This relationship seems logic as it measures somehow very similar characteristics. 
+
+
+#### alcohol and chlorides
+
+```{r Alcohol, echo=FALSE, warning = FALSE, out.width = '50%', fig.show='hold'}
+
+qplot(x    = quality_F,
+      y    = alcohol,
+      geom = "violin",
+      data = DT.redwine, 
+      fill = quality_F) +
+  xlab("Quality Ratings") +
+  ylab("Measure of Alcohol") + 
+  labs(title = "Vizualizuation of Alcohol and Quality Ratings", 
+       subtitle = "Alcohol in % by volume") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") + 
+  theme(legend.text=element_text(size=2))
+
+
+qplot(x    = alcohol,
+      geom = "histogram",
+      data = DT.redwine, 
+      fill = quality_F, 
+      bins = 15) + 
+  xlab("Measured alcohol") +
+  ylab("Frequeny") + 
+  labs(title    = "Histogram of alcohol values", 
+       subtitle = " alcohol ") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_continuous(breaks = seq(from = 8, to = 13.5, by = 0.5),
+                limits = c(8.5,13.5))
+
+```
+
+```{r Chlorides2, echo=FALSE, warning = FALSE, out.width = '50%', fig.show='hold'}
+
+
+
+ggplot(data = DT.redwine,
+       aes(x = quality_F,
+           y = chlorides)) +
+  geom_boxplot(aes(fill = quality_F)) + 
+  stat_smooth(method= "lm", 
+              formula = quality_F ~ chlorides) +
+  xlab("Quality Ratings") + 
+  ylab("Measure of chlorides") + 
+  labs(title    = "Vizualizuation of chlorides and Quality Ratings", 
+       subtitle = "Chlorides in g / dm^3)") +
+  theme_minimal()+
+  scale_fill_brewer(palette = "RdYlBu") 
+
+
+qplot(x    = chlorides,
+      geom = "histogram",
+      data = DT.redwine, 
+      fill = quality_F, 
+      bins = 40) + 
+  xlab("Measured chlorides") +
+  ylab("Frequeny") + 
+  labs(title    = "Histogram of chlorides values", 
+       subtitle = " chlorides ") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") +
+  scale_x_log10(breaks = seq(from = 0.03, to = 0.2, by = 0.01),
+                limits = c(0.04,0.15))
+
+```
+
+# Multivariate Plots Section: Significant variables
+
+
+## Vizualization of the significant variables
+
+In order to guide and determines Significant variables, we plot it using the corrplot function: 
+
+```{r corr, echo=FALSE} 
+M <- cor(Df.redwine)
+corrplot(M, method = "number")
+``` 
+
+The result shows an issue in the data with total sulfur dioxide.
+```{r tableNA, echo=FALSE} 
+table(is.na(Df.redwine$total.sulfur.dioxide))
+```
+
+The Table of NAs shows only 2 missing values, as only 2 are missing out, an appropriate cleaning strategy could be to remove them or populate them with the mean of the sample.
+
+The latter strategy will be used.
+
+```{r clean, echo=FALSE, message = FALSE, warning=FALSE } 
+
+Df.redwine[is.na(Df.redwine$total.sulfur.dioxide),]$total.sulfur.dioxide <- mean(Df.redwine$total.sulfur.dioxide, na.rm = T)
+
+M <- cor(Df.redwine)
+corrplot(M, method="circle")
+```
+
+### Interesting relationship between the variables: 
+The correlation plot shows two small group of variables interacting:
+* Fixed acidity, citric acidity and PH : all the variables relates to the acidity of the wine.
+* Density and alcohol : Alcohol have a different density than water thus influencing on density measured.
+
+### Exploration of non correlated variables: 
+Some variables are very close to 0 in the correlation matrix, sulphate and residual sugar for example, free sulfur dioxide and chlorides, fixe acidity and alcohol. b
+
+fixed acidity explanations:
+
+http://waterhouse.ucdavis.edu/whats-in-wine/fixed-acidity
+
+### Density multivariate exploration
+
+```{r LM_multivariate_dens, echo=FALSE, out.width = '50%', fig.show='hold', message = FALSE, warning=FALSE }
+ggplot(aes(x = density, 
+           y = fixed.acidity, color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("density") +
+  ylab("fixed acidity") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu")  + 
+  scale_x_continuous(breaks = seq(from = 0.995, to = 1.0010, by = 0.001),
+                     limits = c(0.995,1.0010)) + 
+  scale_y_continuous(breaks = seq(from = 0, to = 14, by = 0.5),
+                     limits = c(6,13))
+
+ggplot(aes(x = density, 
+           y = residual.sugar   , color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("density") +
+  ylab("residual.sugar") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu") +
+  scale_color_brewer(palette = "RdYlBu")  + 
+  scale_x_continuous(breaks = seq(from = 0.995, to = 1.0010, by = 0.001),
+                     limits = c(0.995,1.0010)) + 
+  scale_y_continuous(breaks = seq(from = 0, to = 5, by = 0.25),
+                     limits = c(1.25,4))
+```
+
+```{r LM_multivariate_dens2, echo=FALSE, out.width = '50%', fig.show='hold', message = FALSE, warning=FALSE }
+ggplot(aes(x = density, 
+           y = total.sulfur.dioxide, color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("density") +
+  ylab("total.sulfur.dioxide") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu") +
+  scale_color_brewer(palette = "RdYlBu")  + 
+  scale_x_continuous(breaks = seq(from = 0.995, to = 1.0010, by = 0.001),
+                     limits = c(0.995,1.0010)) + 
+  scale_y_continuous(breaks = seq(from = 0, to = 130, by = 5),
+                     limits = c(5,120))
+
+ggplot(aes(x = density, 
+           y = pH   , color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("density") +
+  ylab("pH") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu") 
+```
+
+
+### pH multivariate exploration
+
+```{r LM_multivariate_ph, echo=FALSE, out.width = '50%', fig.show='hold', message = FALSE, warning=FALSE }
+ggplot(aes(x = pH, 
+           y = fixed.acidity, color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("pH") +
+  ylab("fixed acidity") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu") + 
+  scale_x_continuous(breaks = seq(from = 2, to = 5, by = 0.1),
+                     limits = c(3,3.8)) + 
+  scale_y_continuous(breaks = seq(from = 0, to = 20, by = 0.5),
+                     limits = c(5,13.5))
+
+ggplot(aes(x = pH, 
+           y = residual.sugar   , color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("pH") +
+  ylab("residual.sugar") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu")  + 
+  scale_x_continuous(breaks = seq(from = 2, to = 5, by = 0.1),
+                     limits = c(3,3.7)) + 
+  scale_y_continuous(breaks = seq(from = 0, to = 14, by = 0.25),
+                     limits = c(1.5,6.75))
+```
+
+```{r LM_multivariate_ph2, echo=FALSE, out.width = '50%', fig.show='hold', message = FALSE, warning=FALSE }
+ggplot(aes(x = pH, 
+           y = total.sulfur.dioxide, color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("pH") +
+  ylab("total.sulfur.dioxide") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu") + 
+  scale_x_continuous(breaks = seq(from = 2, to = 5, by = 0.1),
+                     limits = c(3,3.7)) + 
+  scale_y_continuous(breaks = seq(from = 0, to = 150, by = 15),
+                     limits = c(0,150))
+
+ggplot(aes(x = pH, 
+           y = density  , color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("pH") +
+  ylab("density") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu") + 
+  scale_x_continuous(breaks = seq(from = 2, to = 5, by = 0.1),
+                     limits = c(3,3.7)) +
+  scale_y_continuous(breaks = seq(from = 0.995, to = 1.0010, by = 0.001),
+                     limits = c(0.995,1.0010))
+```
+
+
+### alcohol multivariate exploration
+
+```{r LM_multivariate_alc, echo=FALSE, out.width = '50%', fig.show='hold', message = FALSE, warning=FALSE }
+ggplot(aes(x = alcohol, 
+           y = fixed.acidity, color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("alcohol") +
+  ylab("fixed acidity") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu") +
+  scale_y_continuous(limits = c(5,13),
+                     breaks = seq(from = 4.5, to = 16, by = 0.5))+
+  scale_x_continuous(breaks = seq(from = 9, to  = 14, by = 0.5),
+                     limits = c(9, 13.5))
+
+ggplot(aes(x = alcohol, 
+           y = residual.sugar   , color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("alcohol") +
+  ylab("residual.sugar") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu") +
+  scale_y_continuous(breaks = seq(from = 0, to = 7, by = 1),
+                     limits = c(1,7)) +
+  scale_x_continuous(breaks = seq(from = 9, to  = 14, by = 0.5),
+                     limits = c(9, 13.5))
+```
+
+```{r LM_multivariate_alc2, echo=FALSE, out.width = '50%', fig.show='hold', message = FALSE, warning=FALSE }
+ggplot(aes(x = alcohol, 
+           y = total.sulfur.dioxide, color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("alcohol") +
+  ylab("total.sulfur.dioxide") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu") + 
+  scale_y_continuous(breaks = seq(from = 0, to = 150, by = 10),
+                     limits = c(0,160)) +
+  scale_x_continuous(breaks = seq(from = 9, to  = 14, by = 0.5),
+                     limits = c(9, 13.5)) 
+
+ggplot(aes(x = alcohol, 
+           y = density  , color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("alcohol") +
+  ylab("density") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu") +
+  scale_x_continuous(breaks = seq(from = 9, to  = 14, by = 0.5),
+                     limits = c(9, 13)) + 
+  scale_y_continuous(breaks = seq(from = 0.995, to = 1.0010, by = 0.001),
+                     limits = c(0.995,1.0010))
+```
+
+
+
+### Chlorides multivariate exploration
+
+```{r LM_multivariate_c_intro, echo=FALSE, out.width = '50%', fig.show='hold'}
+
+Correlation <- data.table(cor(Df.redwine))
+
+```
+
+
+
+```{r LM_multivariate_c, echo=FALSE, out.width = '50%', fig.show='hold', message = FALSE, warning=FALSE }
+ggplot(aes(x = chlorides , 
+           y =   alcohol, color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("Chlorides") +
+  ylab("Alcohol") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu") + 
+  scale_x_continuous(breaks = seq(from = 0, to = 0.2, by = 0.02),
+                     limits = c(0.04,0.15)) + 
+  scale_y_continuous(breaks = seq(from = 0, to = 14, by = 0.5),
+                     limits = c(9,13.5))
+
+ggplot(aes(x = chlorides, 
+           y = sulphates   , color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("Chlorides") +
+  ylab("Sulphates") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu") + 
+  scale_x_continuous(breaks = seq(from = 0, to = 1, by = 0.01),
+                     limits = c(0.04,0.12)) + 
+  scale_y_continuous(breaks = seq(from = 0, to = 14, by = 0.1),
+                     limits = c(0.4,0.95))
+```
+
+```{r LM_multivariate_c2, echo=FALSE, out.width = '50%', fig.show='hold', message = FALSE, warning=FALSE }
+ggplot(aes(x = chlorides , 
+           y =   total.sulfur.dioxide, color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("Chlorides") +
+  ylab("total.sulfur.dioxide") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu") + 
+  scale_x_continuous(breaks = seq(from = 0, to = 0.2, by = 0.02),
+                     limits = c(0.04,0.12)) + 
+  scale_y_continuous(breaks = seq(from = 0, to = 150, by = 010),
+                     limits = c(10,150))
+
+ggplot(aes(x = chlorides, 
+           y = volatile.acidity   , color = quality_F), 
+       data = DT.redwine) +
+      geom_point(alpha = 0.8, size = 1) +
+      geom_smooth(method = "lm", se = FALSE, size = 1)  +
+  scale_color_brewer(type = 'seq',
+                   guide = guide_legend(title = 'Quality'))+ 
+  xlab("Chlorides") +
+  ylab("volatile.acidity") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu") + 
+  scale_x_continuous(breaks = seq(from = 0, to = 0.2, by = 0.02),
+                     limits = c(0.04,0.12)) + 
+  scale_y_continuous(breaks = seq(from = 0, to = 200, by = 0.10),
+                     limits = c(0.25,0.9))
+```
+
+### Predictive Model
+
+
+```{r LM, echo = FALSE}
+# Create a simple linear model
+m <- lm(quality ~ ., data = DT.redwine) 
+# ml <- glm(quality_F ~ ., data = DT.redwine, family = binomial(link = "logit")) 
+summary(m)
+```
+
+
+OPTIONAL: Did you create any models with your dataset? Discuss the strengths and limitations of your model.
+
+A linear Model has been fitted to the data, the following list are the results (3 stars  *** means high statistical relevance).
+
+* volatile.acidity     -1.083e+00  1.212e-01  -8.941  < 2e-16 ***
+* chlorides            -1.873e+00  4.195e-01  -4.466 8.54e-06 ***
+* free.sulfur.dioxide   4.503e-03  2.191e-03   2.055   0.0400 *  
+* total.sulfur.dioxide -3.292e-03  7.312e-04  -4.502 7.22e-06 ***
+* pH                   -4.195e-01  1.921e-01  -2.184   0.0291 *  
+* sulphates             9.142e-01  1.145e-01   7.986 2.65e-15 ***
+* alcohol               2.760e-01  2.650e-02  10.416  < 2e-16 ***
+
+Among these, the three most insteresting variables too investigates further are Volatile Acidity Sulphates and Alcohol
+
+
+# Final Plots and Conclusion
+
+The study shows a high significance between the ratings and and measured levels of Volatile Acidity, Chlorides, total sulfur dioxide, sulphates and Alcohol. 
+
+The two following plots are highlighting the significance of the measures on Quality ratings. 
+
+#### Note on the Linear Model results:
+
+High significance variables:
+
+* Volatile Acid
+* chlorides 
+* total.sulfur.dioxide
+* sulphates
+* alcohol
+
+Medium significance:
+
+* free.sulfur.dioxide
+* pH
+
+
+Non-significant variable: 
+
+* density
+* residual.sugar  
+* fixed.acidity 
+* citric.acid 
+
+```{r final plot, echo = FALSE}
+
+ggplot(aes(x = volatile.acidity, 
+       fill = quality_F), 
+       data = DT.redwine) +
+  geom_density(alpha = 0.5) +
+  scale_fill_brewer(palette = "Spectral") + aes(fill=quality_F)+
+  xlab("Measured volatile acidity [g / dm^3]") + 
+  ylab("Density [g / cm^3]") + 
+  labs(title    = "volatile acidity and Quality Ratings") +
+  theme_minimal() 
+```
+
+This plot is very interesting as it show clearly a mark for Volatile Acidity measured. Around 0.4 g / dm^3 most wines are rated between 7 and 8. It would be interesting to see why this low acidity in wine bring better rating, one hypothesis could be that the wine age well and decrease it acidity over time. 
+
+
+```{r final plot2, warning = FALSE, echo = FALSE}
+
+ggplot(aes(x = alcohol, 
+           y = total.sulfur.dioxide,
+           color = quality_F),
+       data = DT.redwine) +
+  geom_point(alpha = 0.8, size = 1) +
+  geom_smooth(method = "lm", se = FALSE, size = 1)  + 
+  xlab("alcohol [%]") +
+  ylab("total.sulfur.dioxide [g / dm^3]") + 
+  labs(title    = "Multivariate plot : Alcohol / Chlorides / Quality Ratings", 
+       subtitle = "Quality is shown as a fitted linear function between the two variables") +
+  theme_minimal() +
+  scale_color_brewer(palette = "RdYlBu") + 
+  scale_y_continuous(breaks = seq(from = 0, to = 150, by = 10),
+                     limits = c(0,160))+ 
+  scale_x_continuous(breaks = seq(from = 5, to = 14, by = 0.5),
+                     limits = c(8.5,13.5))
+```
+
+it is important to plot the data to see the relationship between variables. Here, the total sulfur dioxide and alcohol vizualization. it shows clearly two distinct cluster between the wine that are rated low and average (3 to 5) and the others which are rated 6 +.
+
+```{r final plot3, warning = FALSE, echo = FALSE}
+qplot(x    = quality_F,
+      y    = alcohol,
+      geom = "violin",
+      data = DT.redwine, 
+      fill = quality_F) +
+  xlab("Quality Ratings") +
+  ylab("Measure of Alcohol") + 
+  labs(title = "Vizualizuation of Alcohol and Quality Ratings", 
+       subtitle = "Alcohol in % by volume") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "RdYlBu") + 
+  theme(legend.text=element_text(size=2))
+```
+
+For the final plot, I chose this violin plot because I think we can learn something very interesting from it just by looking at it. 
+
+The Vizualization shows that wines below 11.5 % of Alcohol are usually rated lower than the ones above. Next time you chose a bottle, don't hesitate to have a quick check on the alcohol rating while many other factor influences the expert ratings, we can see that most of the bad rated wine (5 and below) are below the 11.5% treshold. Also, most of the Wines above 12% are rate 6 and above. 
+
+# Reflection
+
+## Struggle and success on the Analysis
+
+Plotting so much different data and value was a bit tedious defining an harmonized color, scales and all titles for the plot was a long work. But in the end, I submitted this project without working on the scale and after adjusting all of the scale, the plotting part made so much more sense.
+
+The big success is that someone can really read the data through the graph with the scales and colors and identify, by intuition, which are the values that are contributing to the rating of the Wine. Note that is also something to take with caution as we don't know when the data has been collected and the wine rated. Wine taste evolves with time and follow industry trends. For example if a rating was 8 for a certain wine in 2000, exactly the same wine with the same taste may have another rating in 2017.
+
+The analysis also highlighted for me the importance of plotting the data. The difference between Multivariates/ Bivariate and univariate plots are self explaining and I'll definetely following this route in my next analyses. 
+
+One part, that I think should be further developped in the machine learning section is the linear regression, it have a more mathematic approach and can really guides the analysis and highlight the levels of statistical relevance of each variables.
+
+
+## Further work
+
+Sharing this analysis with wine expert or chemists would be of great help to further understand the relationship between the data. Ethanol / Alcohol is for example lighter than water and does impact density, now, to which extent impact the other variable to the density? Many some expert knowledge could be used to simplify the models or to put some theoritical values to compare with. 
+
+It would have been intersting to plot the relation between the sulphur dioxide levels against the age of the wine and the quality rating, unfortunately this value is missing. 
+
+According to ,https://www.wineselectors.com.au/selector-magazine/wine/wine-101/preserving-the-truth-on-sulphates-in-wine, the sulphur dioxide levels decrease with Age as it dissipates over time.
+ 
+
